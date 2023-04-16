@@ -1,0 +1,16 @@
+import arcpy
+
+# Set the workspace to the geodatabase containing the tables and feature class
+arcpy.env.workspace = r"D:\BIOCORREDOR_2022\03_MARXAN_DATA\SPP_POT_REM_MARXAN_PU_250.gdb"
+
+# Get a list of all the table names in the geodatabase
+table_names = arcpy.ListTables()
+
+# Sort the table names based on the suffix number of the spp prefix
+sorted_table_names = sorted(table_names, key=lambda x: int(x.split("_")[1]))
+
+# Loop through the sorted table names and create a new field in the feature class
+for table_name in sorted_table_names:
+    prefix = table_name[:7] # Get the first 7 characters of the table name
+    field_name = prefix # Create a new field name based on the prefix
+    arcpy.AddField_management("PU_250_53612_HEX_SPEC_ECO", field_name, "DOUBLE") # Add the new field to the feature class as a double field
