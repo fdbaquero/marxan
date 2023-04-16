@@ -1,0 +1,33 @@
+import arcpy
+
+# Set the workspace to the geodatabase containing the tables and feature class
+arcpy.env.workspace = r"D:\BIOCORREDOR_2022\03_MARXAN_DATA\SPP_POT_REM_MARXAN_PU_250.gdb"
+
+# Set the input and join fields for the join operation
+input_table = "PU_250_53612_HEX_SPEC_ECO"
+join_table_prefix = "spp_"
+join_field = "ID_MICRO"
+join_fields = ["SUM_Area_spp_Ha"]
+
+# Create a dictionary of prefix keys and table names
+table_dict = {}
+table_names = arcpy.ListTables()
+for table_name in table_names:
+    prefix = table_name[:7]
+    table_dict[prefix] = table_name
+
+# Loop through the prefix keys in the desired order and join and calculate for each corresponding table
+for i in range(101, 535):
+    prefix = join_table_prefix + f"{i:03d}"
+    join_table = table_dict.get(prefix)
+    field_name = prefix
+    if join_table:
+        # Add a join between the input table and the join table
+        arcpy.AddJoin_management(input_table, join_field, join_table, join_field)
+        
+        # Calculate the value of the new field based on the SUM_Area_spp_Ha field in the joined table
+        expression = "!" + join_table + ".SUM_Area_spp_Ha!"
+        arcpy.CalculateField_management(input_table, field_name, expression, "PYTHON3")
+        
+        # Remove the join
+        arcpy.RemoveJoin_management(input_table, join_table)
